@@ -3,6 +3,7 @@
 Created on Tue Sep 20 14:56:50 2022
 
 @author: Aidan Robertson
+         Jake Davis
 """
 
 #import statements
@@ -63,6 +64,9 @@ def decryptMessage(message, d, n):
     # loops through 'characters' in the message (they are actually numbers bc unicode)
     for c in message: 
         temp = c
+            #mod to make sure d remains non-negative, avoids decryption error
+        if d < 0:
+            d = d%phi
             #runs decryption algorithm using the private keys generated earlier
         temp = pow(temp, d) % n
             #appends decrypted unicode character to decrypt list, which will be returned after for loop
@@ -120,7 +124,7 @@ encryptedMessage = encryptMessage(message, e, n)
 #--------------DEBUG--------------
 for c in message:
     message2.append(ord(c))
-print("Inital Message = ", message)
+print("Initial Message = ", message)
 print("ASCII Message = ", message2)
 print("Encrypted Message = ", encryptedMessage)
 #----------------------------------
