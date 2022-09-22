@@ -17,7 +17,7 @@ def extendedGcd(a, b):
     if b == 0:
         return (1, 0, a)
     (x, y, d) = extendedGcd(b, a%b)
-    
+
     return y, x - a//b*y, d
 
 #GCD function is used because it can help to determine if two
@@ -25,12 +25,12 @@ def extendedGcd(a, b):
 def generatePublicKey(phi):
     #generate random number to be tested
     potentialKey = random.randint(0,phi)
-    
+
     print(potentialKey)
         #if potentialKey (generated integer) is relative prime to phi
     if math.gcd(phi, potentialKey) == 1:
         #print("Found Key...")
-        
+
             #return public key
         return potentialKey
         #if potentialKey (generated integer) is not relative prime
@@ -49,20 +49,20 @@ def generatePrivateKey(e, phi):
 def encryptMessage(message, e, n):
     sumc = []
     #loop through characters in message
-    for c in message: 
+    for c in message:
             #convert message[i] into unicode (ascii basically)
         temp = ord(c)
             #temp^e % n to encrypt message using public key
         temp = pow(temp, e) % n
             #appends encrypted character to sumc list, which will be returned after for loop
-        sumc.append(temp)  
+        sumc.append(temp)
     return sumc
 
 #decrypts message when called and passed the message (encrypted form), n, and the private key (d)
 def decryptMessage(message, d, n):
     decrypt = []
     # loops through 'characters' in the message (they are actually numbers bc unicode)
-    for c in message: 
+    for c in message:
         temp = c
             #mod to make sure d remains non-negative, avoids decryption error
         if d < 0:
@@ -70,15 +70,15 @@ def decryptMessage(message, d, n):
             #runs decryption algorithm using the private keys generated earlier
         temp = pow(temp, d) % n
             #appends decrypted unicode character to decrypt list, which will be returned after for loop
-        decrypt.append(temp)  
+        decrypt.append(temp)
     #returns a list containing the decrypted unicode characters
     return decrypt
 
 
-# -----------------------------------RUN TIME CODE (MAIN)--------------------------------------------------- 
+# -----------------------------------RUN TIME CODE (MAIN)---------------------------------------------------
 #P
 seedP = 151 # this will eventually need to be automatically generated at runtime
-#Q 
+#Q
 seedQ = 167 # this will eventually need to be automatically generated at runtime
 #generate phi (p-1)*(q-1)
 phi = (seedP-1) * (seedQ-1)
@@ -115,7 +115,7 @@ print("Public Key = " + str(n)+ ","+ str(e))
 print("Private Key = " + str(n)+ ","+ str(d))
 #---------------------------------
 
-message = "Test" #this will eventually be input by the user at runtime
+message = input("Please Enter Message To Be Encrypted: ")
 message2 = []
 
 #returns encryptedMessage (characters in unicode, with encryption algorithm)
@@ -129,7 +129,7 @@ print("ASCII Message = ", message2)
 print("Encrypted Message = ", encryptedMessage)
 #----------------------------------
 
-#decrypts message when passed encryptedMessage, priavte key (d), n 
+#decrypts message when passed encryptedMessage, priavte key (d), n
 decryptedMessage = decryptMessage(encryptedMessage, d, n)
 
 print("Decrypted Message = ", decryptedMessage)
@@ -139,5 +139,5 @@ returnedMessage = []
 for c in decryptedMessage:
     value = chr(c)
     returnedMessage.append(value)
-    
+
 print("Returned Message = ", returnedMessage)
