@@ -4,6 +4,7 @@ Created on Tue Sep 20 14:56:50 2022
 
 @author: Aidan Robertson
          Jake Davis
+         Sam Games
 """
 
 #import statements
@@ -11,9 +12,8 @@ import math
 import random
 
 #------------------------------FUNCTION DECLARATIONS------------------------------------------------------------
-
 #Generates list of pseudo prime candidates
-def candidateList(n = 1000000):
+def candidateList(n = 10000):
     l = []
     for i in range(200):
         c = random.randint(n, 10 * n)
@@ -90,12 +90,15 @@ def encryptMessage(message, e, n):
     sumc = []
     #loop through characters in message
     for c in message:
+        print(c)
             #convert message[i] into unicode (ascii basically)
         temp = ord(c)
             #temp^e % n to encrypt message using public key
-        temp = pow(temp, e) % n
+                #pow with third argument = (temp^d) % n
+        temp = pow(temp, e, n)
             #appends encrypted character to sumc list, which will be returned after for loop
         sumc.append(temp)
+
     return sumc
 
 #decrypts message when called and passed the message (encrypted form), n, and the private key (d)
@@ -108,13 +111,12 @@ def decryptMessage(message, d, n):
         if d < 0:
             d = d%phi
             #runs decryption algorithm using the private keys generated earlier
-        temp = pow(temp, d) % n
+                #pow with third argument = (temp^d) % n
+        temp = pow(temp, d, n)
             #appends decrypted unicode character to decrypt list, which will be returned after for loop
         decrypt.append(temp)
     #returns a list containing the decrypted unicode characters
     return decrypt
-
-
 # -----------------------------------RUN TIME CODE (MAIN)---------------------------------------------------
 #P
 #seedP = 151 # this will eventually need to be automatically generated at runtime
@@ -123,23 +125,21 @@ def decryptMessage(message, d, n):
 
 #generate two psuedo prime numbers p and q
 seedP, seedQ = selectPQ(isPrime(candidateList()))
-
+#seedP = 17
+#seedQ = 19
 #--------------DEBUG--------------
     #prints phi
 print("p = " + str(seedP))
 print("q = " + str(seedQ))
 #---------------------------------
-
 #generate phi (p-1)*(q-1)
 phi = (seedP-1) * (seedQ-1)
-
 #--------------DEBUG--------------
     #prints phi
 print("phi = " + str(phi))
 #---------------------------------
 #generates n, to be used with public key (n, e) aswell as private key (n, d)
 n = seedP * seedQ
-
 #--------------DEBUG--------------
     #prints n
 print("N = " + str(n))
