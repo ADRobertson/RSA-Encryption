@@ -12,6 +12,46 @@ import random
 
 #------------------------------FUNCTION DECLARATIONS------------------------------------------------------------
 
+#Generates list of pseudo prime candidates
+def candidateList(n = 1000000):
+    l = []
+    for i in range(200):
+        c = random.randint(n, 10 * n)
+        if c %2 != 0 and c %3 != 0 and c %7 != 0 and c %11 != 0:
+            l.append(c)
+    return l
+
+#Checks to see which numbers in the candidate list are pseudo prime
+def isPrime(candList = [2]):
+    primeList = []
+    while len(primeList) < 2:
+        for i in candList:
+            pseudo = True
+            #Fermat's test * 40
+            for j in range (40):
+                p = random.randint(2, i//2)
+                if pow(p, i - 1, i) != 1 or math.gcd(p, i) != 1:
+                    pseudo = False
+                    break
+            if pseudo:
+                primeList.append(i)
+        if len(primeList) < 5:
+            candList = candidateList()
+    return primeList
+
+#Selects our p and q from the psuedo prime list above
+def selectPQ(pList = []):
+    if len(pList) < 2:
+        print('Two or more prime numbers required.')
+        return
+    else:
+        p = pList.pop()
+        q = pList.pop()
+        #Prevent duplicates
+        while p == q:
+            q = pList.pop()
+        return p, q
+
 #Called in generatePrivateKey to determine d
 def extendedGcd(a, b):
     if b == 0:
@@ -77,9 +117,19 @@ def decryptMessage(message, d, n):
 
 # -----------------------------------RUN TIME CODE (MAIN)---------------------------------------------------
 #P
-seedP = 151 # this will eventually need to be automatically generated at runtime
+#seedP = 151 # this will eventually need to be automatically generated at runtime
 #Q
-seedQ = 167 # this will eventually need to be automatically generated at runtime
+#seedQ = 167 # this will eventually need to be automatically generated at runtime
+
+#generate two psuedo prime numbers p and q
+seedP, seedQ = selectPQ(isPrime(candidateList()))
+
+#--------------DEBUG--------------
+    #prints phi
+print("p = " + str(seedP))
+print("q = " + str(seedQ))
+#---------------------------------
+
 #generate phi (p-1)*(q-1)
 phi = (seedP-1) * (seedQ-1)
 
