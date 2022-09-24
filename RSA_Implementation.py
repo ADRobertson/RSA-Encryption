@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue Sep 20 14:56:50 2022
-
 @author: Aidan Robertson
          Jake Davis
          Sam Games
@@ -191,3 +190,31 @@ for c in decryptedMessage:
     returnedMessage.append(value)
 
 print("Returned Message = ", returnedMessage)
+
+
+def signature(message, d, n):
+    list = []
+    for s in message:
+        print(s)
+            #converts the message into ascii
+        temp = ord(s)
+       
+            # generates signature with private key
+        s = pow(message, d, n)
+        
+        #adds and stores characters in list
+        list.append(temp)  
+    
+    return list
+
+def verify(signature, e, n):
+    #verify message with public key
+    v = pow(s, e, n)
+    
+    #Checks to see if the message is a valid signature
+    if v == message:
+        print("The message has been authenticated")
+
+    else:
+        print("The message has not been authenticated")
+        
