@@ -12,7 +12,7 @@ import random
 
 #------------------------------FUNCTION DECLARATIONS------------------------------------------------------------
 #Generates list of pseudo prime candidates
-def candidateList(n = 10000):
+def candidateList(n = 1000000):
     l = []
     for i in range(200):
         c = random.randint(n, 10 * n)
@@ -65,7 +65,7 @@ def generatePublicKey(phi):
     #generate random number to be tested
     potentialKey = random.randint(0,phi)
 
-    print(potentialKey)
+    #print(potentialKey)
         #if potentialKey (generated integer) is relative prime to phi
     if math.gcd(phi, potentialKey) == 1:
         #print("Found Key...")
@@ -89,7 +89,6 @@ def encryptMessage(message, e, n):
     sumc = []
     #loop through characters in message
     for c in message:
-        print(c)
             #convert message[i] into unicode (ascii basically)
         temp = ord(c)
             #temp^e % n to encrypt message using public key
@@ -116,34 +115,44 @@ def decryptMessage(message, d, n):
         decrypt.append(temp)
     #returns a list containing the decrypted unicode characters
     return decrypt
-# -----------------------------------RUN TIME CODE (MAIN)---------------------------------------------------
-#P
-#seedP = 151 # this will eventually need to be automatically generated at runtime
-#Q
-#seedQ = 167 # this will eventually need to be automatically generated at runtime
 
+def generateSignature(message, d, n):
+    list = []
+    for s in message:
+        #print(s)
+            #converts the message into ascii
+        temp = ord(s)
+
+            # generates signature with private key
+        s = pow(temp, d, n)
+        #print("S is " + str(s))
+
+        #adds and stores characters in list
+        list.append(s)
+
+    return list
+
+def verifySignature(signature, e, n):
+    returnList = []
+    #verify message with public key
+
+    for s in signature:
+        v = pow(s, e, n)
+        returnList.append(v)
+
+    #Checks to see if the message is a valid signature
+    return returnList
+# -----------------------------------RUN TIME CODE (MAIN)---------------------------------------------------
 #generate two psuedo prime numbers p and q
 seedP, seedQ = selectPQ(isPrime(candidateList()))
-#seedP = 17
-#seedQ = 19
-#--------------DEBUG--------------
-    #prints phi
-print("p = " + str(seedP))
-print("q = " + str(seedQ))
-#---------------------------------
+
 #generate phi (p-1)*(q-1)
 phi = (seedP-1) * (seedQ-1)
-#--------------DEBUG--------------
-    #prints phi
-print("phi = " + str(phi))
-#---------------------------------
+
 #generates n, to be used with public key (n, e) aswell as private key (n, d)
 n = seedP * seedQ
-#--------------DEBUG--------------
-    #prints n
-print("N = " + str(n))
-#---------------------------------
 
+#Key Generation needs to take place BEFORE UI opens
 #generate public key (e), passed phi
 e = generatePublicKey(phi)
 
@@ -154,67 +163,148 @@ returnValues = generatePrivateKey(e, phi)
 for x in returnValues:
      if (e*x%phi == 1):
          d = x
-         print(d)
 
-#--------------DEBUG--------------
-    #prints return for value
-#print(returnValues)
-    # prints public key (n, e) and private key (n, d)
-print("Public Key = " + str(n)+ ","+ str(e))
-print("Private Key = " + str(n)+ ","+ str(d))
-#---------------------------------
+encryptedMessages = []
+decryptedMessages = []
 
-message = input("Please Enter Message To Be Encrypted: ")
-message2 = []
+signatureMessages = []
+signatures = []
 
-#returns encryptedMessage (characters in unicode, with encryption algorithm)
-encryptedMessage = encryptMessage(message, e, n)
-
-#--------------DEBUG--------------
-for c in message:
-    message2.append(ord(c))
-print("Initial Message = ", message)
-print("ASCII Message = ", message2)
-print("Encrypted Message = ", encryptedMessage)
-#----------------------------------
-
-#decrypts message when passed encryptedMessage, priavte key (d), n
-decryptedMessage = decryptMessage(encryptedMessage, d, n)
-
-print("Decrypted Message = ", decryptedMessage)
-
-#converts decrypted unicode to characters and appends them to returnedMessage list
-returnedMessage = []
-for c in decryptedMessage:
-    value = chr(c)
-    returnedMessage.append(value)
-
-print("Returned Message = ", returnedMessage)
+userType = 0
 
 
-def signature(message, d, n):
-    list = []
-    for s in message:
-        print(s)
-            #converts the message into ascii
-        temp = ord(s)
-       
-            # generates signature with private key
-        s = pow(message, d, n)
-        
-        #adds and stores characters in list
-        list.append(temp)  
-    
-    return list
+print("RSA Keys Have Been Generated...")
 
-def verify(signature, e, n):
-    #verify message with public key
-    v = pow(s, e, n)
-    
-    #Checks to see if the message is a valid signature
-    if v == message:
-        print("The message has been authenticated")
+#determine initial user type (owner of keys or public user)
+print("Please select your user type:")
+print("\t1. A Public User")
+print("\t2. The Owner Of The Keys")
+print("\t3. Exit Program")
+userType = input("Enter Your Choice: ")
 
-    else:
-        print("The message has not been authenticated")
-        
+while userType != '3':
+    #if user is a public user
+    if userType == '1':
+        print("\nAs a Public User what would you like to do?")
+        print("\t1. Send an Encrypted Message")
+        print("\t2. Authenticate a digital signature")
+        print("\t3. Exit")
+        publicUserChoice = input("Enter Your Choice: ")
+
+        #if user wants to send an encrypted message
+        if publicUserChoice == '1':
+                #let user input desired message to encrypt
+            message = input("Enter a Message: ")
+                #send message, public key, and n to encryptMessage function
+            encryptedMessage = encryptMessage(message, e, n)
+                #append encrypted message to encryptedMessages list (used later for I/O listing messages available to owner to decrypt)
+            encryptedMessages.append(encryptedMessage)
+
+        #if user wants to authenticate a digital signature
+        elif publicUserChoice == '2':
+            #if there are no signatures available to authenticate
+            if len(signatures) == 0:
+                print("There are no signatures available to authenticate...")
+            #otherwise/ if there are signatures available to authenticate
+            else:
+                print("The Following Messages Are Available: ")
+                #for loop to print out messages available to be authenticated
+                for x, message in enumerate(signatures):
+                    print(str(x+1) + ".", signatureMessages[x])
+
+                #input to let user select which signature to authenticate
+                validateSignatureChoice = input("Enter Your Choice: ")
+                #subtract 1 from input becuase we add one earlier (so that the first item in list is available as '1' not '0')
+                validateSignatureChoice = int(validateSignatureChoice) - 1
+
+                #pass encrypted signature, public key to verifySignature, returns unecrypted unicode
+                reducedSignature = verifySignature(signatures[validateSignatureChoice],e,n)
+
+                #this for loop converts unicode decrypted signature to plain text
+                plainTextSignatureList = []
+                for s in reducedSignature:
+                    temp = chr(s)
+                    plainTextSignatureList.append(temp)
+
+                #now that decrypted signature is in characters, use join function to make a string out of them
+                plainTextSignature = ''.join(plainTextSignatureList)
+
+                #if plainTextSignature is the same as the initial input by owner of the keys, (meaning it is validiated!)
+                if (plainTextSignature == signatureMessages[validateSignatureChoice]):
+                    print("Signature is Valid!")
+                else:
+                    print("Signature is Not Valid!")
+        #if user wants to exit public user menu
+        elif publicUserChoice == '3':
+            #allow user to select whether they are owner of keys or public user again
+            print("\nPlease select your user type:")
+            print("\t1. A Public User")
+            print("\t2. The Owner Of The Keys")
+            print("\t3. Exit Program")
+            userType = input("Enter Your Choice: ")
+
+    #if user is owner of keys
+    elif userType == '2':
+        #allows user to determine what they'd like to do as owner of the keys
+        print("\nAs the Owner of the Keys, what would you like to do?")
+        print("\t1. Decrypt a received message")
+        print("\t2. Digitally Sign a message")
+        print("\t3. Exit")
+        privateUserChoice = input("Enter Your Choice: ")
+
+        #if user wants to decrypt a received message
+        if privateUserChoice == '1':
+            #if there are no encrypted messages available to decrypt
+            if len(encryptedMessages) == 0:
+                print("There are no messages available")
+            #others/ there are encrypted messages available to decrypt
+            else:
+                #list messages available to decrypt (the lenght of the messages)
+                for x, message in enumerate(encryptedMessages):
+                    print(str(x + 1) + ". (length =" + str(len(message)) + ")")
+
+                #allow user to make choice for which message is to be decrypted
+                decryptMessageChoice = input("Enter your choice: ")
+                #converts user input to integer (for slicing) and subtracts 1 (we added one earlier to make the first item appear as 1 instead of 0)
+                decryptMessageChoice = int(decryptMessageChoice) - 1
+
+                #passes encryptedMessage[choice of user] and private key to decryptMessage
+                decryptedMessage = decryptMessage(encryptedMessages[decryptMessageChoice],d,n)
+
+                #loops through decrypted message (in unicode list) and: converts it to plain text, appends it to list of characters in finalMessage List
+                finalMessageList = []
+                for x in decryptedMessage:
+                    temp = chr(x)
+                    finalMessageList.append(temp)
+
+                #now that decrypted message is in plain text, join the list to form a string
+                finalMessage = ''.join(finalMessageList)
+
+                #print the formed string from finalMessageList
+                print("Decrypted Message: ", finalMessage)
+
+        #if user wants o digitally sign a message
+        elif privateUserChoice == '2':
+            #ask user to input their signature message
+            signatureMessage = input("Enter a message: ")
+            #adds plain text message to signatureMessages (for display at public user menu)
+            signatureMessages.append(signatureMessage)
+            #adds a list of encrypted characters to signatures list, this will eventually be used to pass to verifySignature when public user authenticates it
+            signatures.append(generateSignature(signatureMessage, d, n))
+            #confirms that the message was properly processed.
+            print('Message signed and sent.')
+
+        #if user wants to exit owner of keys menu
+        elif privateUserChoice == '3':
+            #allow user to select whether they are owner of the keys or public user again
+            print("\nPlease select your user type:")
+            print("\t1. A Public User")
+            print("\t2. The Owner Of The Keys")
+            print("\t3. Exit Program")
+            userType = input("Enter Your Choice: ")
+
+    #if user wants to exit the program entirely
+    elif userType == '3':
+        break
+
+print("***The Program Run has Ended***")
